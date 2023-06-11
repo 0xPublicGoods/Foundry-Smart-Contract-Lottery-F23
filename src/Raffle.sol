@@ -104,6 +104,9 @@ contract Raffle is VRFConsumerBaseV2 {
         uint256 requestId,
         uint256[] memory randomWords
     ) internal override {
+        // CHECKS
+
+        // EFFECTS
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable winner = s_players[indexOfWinner];
         s_recentWinner = winner;
@@ -111,18 +114,17 @@ contract Raffle is VRFConsumerBaseV2 {
 
         // reset the players array
         s_players = new address payable[](0);
+
         // reset the timer
         s_lastTimestamp = block.timestamp;
 
+        emit WinnerPicked(winner);
+
+        // INTERACTIONS
         (bool success, ) = winner.call{value: address(this).balance}("");
         if (!success) {
             revert Raffle__TransferFailed();
         }
-
-        emit WinnerPicked(winner);
-        // s_raffleState = RaffleState.OPEN; -> why not over here once payment is successful?
-        // do we get stuck in a RaffleState.CALCULATING forever if it reverts?
-        // maybe we will refactor later...
     }
 
     /** Getters */
