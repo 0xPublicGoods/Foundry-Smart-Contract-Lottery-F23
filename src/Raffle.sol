@@ -19,10 +19,12 @@ contract Raffle {
     /** Events */
     event RaffleEntered(address indexed player);
 
+    /** Constructor */
     constructor(uint256 entranceFee) {
         i_entranceFee = entranceFee;
     }
 
+    /** Methods */
     function enterRaffle() external payable {
         if (msg.value < i_entranceFee) {
             revert Raffle__NotEnoughETHSent();
