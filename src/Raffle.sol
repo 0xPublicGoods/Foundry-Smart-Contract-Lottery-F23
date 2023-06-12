@@ -48,6 +48,7 @@ contract Raffle is VRFConsumerBaseV2 {
     /** Events */
     event RaffleEntered(address indexed player);
     event WinnerPicked(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     /** Constructor */
     constructor(
@@ -123,14 +124,18 @@ contract Raffle is VRFConsumerBaseV2 {
         s_raffleState = RaffleState.CALCULATING;
 
         // 1. get a random number
-        // uint256 requestId = i_vrfCoordinator.requestRandomWords(
-        i_vrfCoordinator.requestRandomWords(
+        uint256 requestId = i_vrfCoordinator.requestRandomWords(
+            // i_vrfCoordinator.requestRandomWords(
             i_gasLane, // gas lane
             i_subscriptionId, // id funded with link
             REQUEST_CONFIRMATIONS, // block confirmations
             i_callbackGasLimit, // dont overspend on call
             NUM_WORDS // #of random numbers/words
         );
+        // Quiz... is this redundant? No, we have no way of knowing if the request was successful on our side
+        // - only relying on chainlink to know, so this way we can update the ui and have it in the logs that
+        // we qctually did request a random number
+        emit RequestedRaffleWinner(requestId);
     }
 
     function fulfillRandomWords(
@@ -176,5 +181,13 @@ contract Raffle is VRFConsumerBaseV2 {
 
     function getPlayer(uint256 indexOfPlayer) external view returns (address) {
         return s_players[indexOfPlayer];
+    }
+
+    function getRecentWinner() external view returns (address) {
+        return s_recentWinner;
+    }
+
+    function getLastTimestamp() external view returns (uint256) {
+        return s_lastTimestamp;
     }
 }
